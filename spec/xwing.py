@@ -26,10 +26,11 @@ def GenerateKeyPairDerand(seed):
     pkX = x25519.X(skX, x25519.BASE)
     return skM + skX + pkX, pkM + pkX
 
-def Combiner(ssM, ssX, ctX, pkX):
+def Combiner(ssM, ctM, ssX, ctX, pkX):
     return hashlib.sha3_256(
         XWingLabel +
         ssM +
+        ctM +
         ssX +
         ctX +
         pkX
@@ -44,7 +45,7 @@ def EncapsulateDerand(pk, eseed):
     ctX = x25519.X(ekX, x25519.BASE)
     ssX = x25519.X(ekX, pkX)
     ctM, ssM = mlkem.Enc(pkM, eseed[0:32], mlkem.params768)
-    ss = Combiner(ssM, ssX, ctX, pkX)
+    ss = Combiner(ssM, ctM, ssX, ctX, pkX)
     return ss, ctM + ctX
 
 def Decapsulate(ct, sk):
@@ -57,4 +58,4 @@ def Decapsulate(ct, sk):
     pkX = sk[2432:2464]
     ssM = mlkem.Dec(skM, ctM, mlkem.params768)
     ssX = x25519.X(skX, ctX)
-    return Combiner(ssM, ssX, ctX, pkX)
+    return Combiner(ssM, ctM, ssX, ctX, pkX)
