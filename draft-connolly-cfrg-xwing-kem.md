@@ -317,10 +317,11 @@ ML-KEM-768 shared secret, X25519 shared secret, X25519 ciphertext
 combined shared secret is given by:
 
 ~~~
-def Combiner(ss_M, ss_X, ct_X, pk_X):
+def Combiner(ss_M, ct_M, ss_X, ct_X, pk_X):
   return SHA3-256(concat(
     XWingLabel,
     ss_M,
+    ct_M,
     ss_X,
     ct_X,
     pk_X
@@ -350,7 +351,7 @@ def Encapsulate(pk):
   ct_X = X25519(ek_X, X25519_BASE)
   ss_X = X25519(ek_X, pk_X)
   (ss_M, ct_M) = ML-KEM-768.Encaps(pk_M)
-  ss = Combiner(ss_M, ss_X, ct_X, pk_X)
+  ss = Combiner(ss_M, ct_M, ss_X, ct_X, pk_X)
   ct = concat(ct_M, ct_X)
   return (ss, ct)
 ~~~
@@ -374,7 +375,7 @@ def EncapsulateDerand(pk, eseed):
   ct_X = X25519(ek_X, X25519_BASE)
   ss_X = X25519(ek_X, pk_X)
   (ss_M, ct_M) = ML-KEM-768.EncapsDerand(pk_M, eseed[0:32])
-  ss = Combiner(ss_M, ss_X, ct_X, pk_X)
+  ss = Combiner(ss_M, ct_M, ss_X, ct_X, pk_X)
   ct = concat(ct_M, ct_X)
   return (ss, ct)
 ~~~
@@ -397,7 +398,7 @@ def Decapsulate(ct, sk):
   pk_X = sk[2432:2464]
   ss_M = ML-KEM-768.Decapsulate(ct_M, sk_M)
   ss_X = X25519(sk_X, ct_X)
-  return Combiner(ss_M, ss_X, ct_X, pk_X)
+  return Combiner(ss_M, ct_M, ss_X, ct_X, pk_X)
 ~~~
 
 `ct` is the 1120 byte ciphertext resulting from `Encapsulate()`
